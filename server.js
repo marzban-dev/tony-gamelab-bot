@@ -1,56 +1,45 @@
-const express = require('express');
+const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
-const bodyParser = require('body-parser');
 
-const app = express();
-const port = process.env.PORT || 3000;
+const botToken = process.end.TELEGRAM_TOKEN;
+const bot = new TelegramBot(botToken, { polling: true });
+const gameShortName = 'YOUR_GAME_SHORT_NAME';
 
-const botToken = '7331642173:AAFSxLUCX-PRVAaKGHtlmJVU7nXUJbtwJ4w';
-const gameUrl = 'https://google.com';
+// Command to start the game
+bot.onText(/\/start/, (msg) => {
+    const chatId = msg.chat.id;
 
-app.use(bodyParser.json());
-
-app.get('/', (req, res) => {
-    res.send('Telegram Game Server');
+    bot.sendGame(chatId, gameShortName)
+        .then(response => {
+            console.log('Game sent:', response);
+        })
+        .catch(error => {
+            console.error('Error sending game:', error);
+        });
 });
 
-// Endpoint to serve the game
-app.get('/game', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
+// Handling callback queries (for inline game buttons)
+bot.on('callback_query', (query) => {
+    const chatId = query.message.chat.id;
+    const userId = query.from.id;
+
+    // Set or get score based on callback data
+    if (query.data === 'getScore') {
+        axios.post(`https://api.telegram.org/bot${botToken}/getGameHighScores`, {
+            user_id: userId,
+            chat_id: chatId
+        })
+            .then(response => {
+                bot.answerCallbackQuery(query.id, {
+                    text: `High Scores: ${JSON.stringify(response.data.result)}`
+                });
+            })
+            .catch(error => {
+                bot.answerCallbackQuery(query.id, {
+                    text: 'Error getting scores'
+                });
+            });
+    }
 });
 
-// Endpoint to set game score
-app.post('/setScore', (req, res) => {
-    const { user_id, score } = req.body;
-
-    // axios.post(`https://api.telegram.org/bot${botToken}/setGameScore`, {
-    //     user_id,
-    //     score,
-    //     force: true
-    // })
-    //     .then(response => {
-    //         res.json(response.data);
-    //     })
-    //     .catch(error => {
-    //         res.status(500).json(error.response.data);
-    //     });
-});
-
-// Endpoint to get high scores
-app.post('/getHighScores', (req, res) => {
-    const { user_id, chat_id } = req.body;
-
-    // axios.get(`https://api.telegram.org/bot${botToken}/getGameHighScores`, {
-    //     params: { user_id, chat_id }
-    // })
-    //     .then(response => {
-    //         res.json(response.data);
-    //     })
-    //     .catch(error => {
-    //         res.status(500).json(error.response.data);
-    //     });
-});
-
-app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}/`);
-});
+console.log('Bot is running...');

@@ -1,7 +1,7 @@
 {
   "version": 2,
   "env": {
-    "TELEGRAM_TOKEN": "7331642173:AAFSxLUCX-PRVAaKGHtlmJVU7nXUJbtwJ4w"
+    "TELEGRAM_BOT_TOKEN": "7331642173:AAFSxLUCX-PRVAaKGHtlmJVU7nXUJbtwJ4w"
   },
   "builds": [
     {

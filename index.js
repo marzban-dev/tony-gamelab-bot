@@ -21,10 +21,17 @@ app.listen(3000, () => {
 
 bot.setWebHook(`https://tony-gamelab-bot.vercel.app/bot${token}`);
 
+
 // bot = new TelegramBot(token, { polling: true });
 
+bot.on("start", async () => {
+    console.log("testtttttttttttttttttttttttt")
+
+})
 
 bot.on('message', (msg) => {
+    console.log("testtttttttttttttttttttttttt")
+
     const chatId = msg.chat.id;
     const response = `Hello, ${msg.from.first_name}! You said: "${msg.text}"`;
     bot.sendMessage(chatId, response);
